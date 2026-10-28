@@ -25,3 +25,54 @@ class BookingViewModel : ViewModel() {
         }
     }
 }
+
+class AuthViewModel : ViewModel() {
+
+    fun loginUser(
+        email: String,
+        pass: String,
+        sessionManager: SessionManager,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                // Send request to Web API using your existing RetrofitClient
+                // NOTE: Change 'RetrofitClient.api' to whatever your RetrofitClient variable is named!
+                val response = RetrofitClient.api.loginUser(LoginRequest(email, pass))
+
+                if (response.success && response.token != null) {
+                    sessionManager.saveAuthToken(response.token) // Save to localStorage
+                    onSuccess()
+                } else {
+                    onError(response.message ?: "Login Failed")
+                }
+            } catch (e: Exception) {
+                onError("Network error: Please check internet or API URL")
+            }
+        }
+    }
+
+    fun registerUser(
+        fullName: String,
+        email: String,
+        pass: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                // Send request to Web API using your existing RetrofitClient
+                // NOTE: Change 'RetrofitClient.api' to whatever your RetrofitClient variable is named!
+                val response = RetrofitClient.api.registerUser(RegisterRequest(fullName, email, pass))
+                if (response.success) {
+                    onSuccess()
+                } else {
+                    onError(response.message ?: "Registration Failed")
+                }
+            } catch (e: Exception) {
+                onError("Network error: Please check internet or API URL")
+            }
+        }
+    }
+}

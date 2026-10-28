@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Dental"
+rootProject.name = "ezeki_live-code__dental-mobile_app"
 include(":app")

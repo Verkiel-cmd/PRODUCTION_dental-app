@@ -76,6 +76,7 @@ import androidx.compose.runtime.setValue
 import com.example.dental.BookingRequest
 import com.example.dental.CurvedBottomBarShape
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 
 
 
@@ -87,20 +88,58 @@ override fun onCreate(savedInstanceState: Bundle?) {
         setContent {
             DentalTheme {
                 // Main App State
-                var isLoggedIn by remember { mutableStateOf(false) }
+                val bookingViewModel: BookingViewModel = viewModel()
+                val authViewModel: AuthViewModel = viewModel()
+                val sessionManager = remember { SessionManager(applicationContext) }
+
+                // 2. Check if user is already logged in
+                val initialLoginState = sessionManager.fetchAuthToken() != null
+                var isLoggedIn by remember { mutableStateOf(initialLoginState) }
 
                 if (isLoggedIn) {
-                    //BurgerMenuScreen()
-                    BurgerMenuScreen(onLogout = { isLoggedIn = false })
+                    // Show Dashboard
+                    BurgerMenuScreen(
+                        onLogout = {
+                            sessionManager.logout() // Clears token
+                            isLoggedIn = false
+                        }
+                    )
                 } else {
+                    // Show Login/Register forms
                     LoginRegisterScreen(
-                        onLoginSuccess = { isLoggedIn = true }
+                        onLoginSuccess = { isLoggedIn = true },
+                        authViewModel = authViewModel, // Make sure your LoginRegisterScreen accepts these parameters!
+                        sessionManager = sessionManager
                     )
                 }
             }
         }
-    }
 }
+} // End of MainActivity clas
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // BURGER MENU FULLSCREEN
 @OptIn(ExperimentalMaterial3Api::class)
@@ -204,6 +243,31 @@ fun BurgerMenuScreen(onLogout: () -> Unit = {}) {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //NAV LINKS
 @Composable
 fun DashboardScreen() {
@@ -260,6 +324,18 @@ fun AppointmentsScreen(viewModel: BookingViewModel = viewModel()) {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 @Composable
 fun PatientRecordsScreen() {
     Box(modifier = Modifier
@@ -282,11 +358,43 @@ fun SettingsScreen() {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ———————————————————————————————————————————————————————————————————————
 // LOGIN / REGISTER SCREEN (Shown First)
 // ———————————————————————————————————————————————————————————————————————
 @Composable
-fun LoginRegisterScreen(onLoginSuccess: () -> Unit) {
+fun LoginRegisterScreen(
+    onLoginSuccess: () -> Unit,
+    authViewModel: AuthViewModel,
+    sessionManager: SessionManager
+) {
     // Hardcoded accounts list (Pre-populated with 1 default user)
     //  Put this ABOVE "class MainActivity"
     data class User(val email: String, val pass: String)
@@ -364,6 +472,121 @@ fun LoginRegisterScreen(onLoginSuccess: () -> Unit) {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Composable
+fun RegisterForm(
+    onRegisterClick: (String, String, String) -> Unit,
+    onNavigateToLogin: () -> Unit
+) {
+    var fullName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = "Create Account", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        OutlinedTextField(
+            value = fullName,
+            onValueChange = { fullName = it },
+            label = { Text("Full Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick = { onRegisterClick(fullName, email, password) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Register")
+        }
+
+        TextButton(onClick = onNavigateToLogin) {
+            Text("Already have an account? Login here")
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //BOTTOM FUNCTION NAVIGATION WITH CURVED DESIGN CONNECTED TO THE SHOW/HIDE NAVIGATION
@@ -457,6 +680,38 @@ fun AppBottomNavigation(
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Helper Composable for Individual Navigation Items Designs and adjustments
 @Composable
 private fun RowScope.CustomNavItem(
@@ -492,6 +747,47 @@ private fun RowScope.CustomNavItem(
             )
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -599,6 +895,18 @@ fun FullscreenMenuOverlay(
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 @Composable
 fun MenuNavItem(
     title: String,
@@ -631,6 +939,51 @@ enum class AppScreen {
     PATIENTS,
     SETTINGS
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @Composable
