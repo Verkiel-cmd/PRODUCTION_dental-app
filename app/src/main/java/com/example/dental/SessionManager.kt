@@ -6,15 +6,22 @@ import android.content.SharedPreferences
 class SessionManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("DentalAppPrefs", Context.MODE_PRIVATE)
 
-    fun saveAuthToken(token: String) {
-        prefs.edit().putString("USER_TOKEN", token).apply()
+    fun saveAuth(token: String, role: String) {
+        prefs.edit()
+            .putString("USER_TOKEN", token)
+            .putString("USER_ROLE", role)
+            .apply()
     }
 
     fun fetchAuthToken(): String? {
         return prefs.getString("USER_TOKEN", null)
     }
 
+    fun fetchUserRole(): String? {
+        return prefs.getString("USER_ROLE", "patient") // Defaults to patient
+    }
+
     fun logout() {
-        prefs.edit().remove("USER_TOKEN").apply()
+        prefs.edit().clear().apply()
     }
 }

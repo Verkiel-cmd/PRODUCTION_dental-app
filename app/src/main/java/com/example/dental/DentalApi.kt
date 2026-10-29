@@ -8,6 +8,9 @@ interface DentalApi {
 
     // Inside your existing: interface DentalApi { ... }
 
+    @POST("/api/google-login")
+    suspend fun googleLogin(@Body request: GoogleLoginRequest): AuthResponse
+
     // --- NEW: Add these two lines at the bottom of the interface ---
     // IMPORTANT: Change these paths to match your actual Web API routes!
     @POST("/api/login.php")

@@ -77,6 +77,14 @@ import com.example.dental.BookingRequest
 import com.example.dental.CurvedBottomBarShape
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.platform.LocalContext
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.CustomCredential
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import androidx.compose.material.icons.filled.Person
+
 
 
 
@@ -269,6 +277,7 @@ fun BurgerMenuScreen(onLogout: () -> Unit = {}) {
 
 
 //NAV LINKS
+//DashboardScreen ———————————————————————————————————————————————————————————————————————————————
 @Composable
 fun DashboardScreen() {
     Box(modifier = Modifier
@@ -280,6 +289,8 @@ fun DashboardScreen() {
     }
 }
 
+
+//AppointmentsScreen ———————————————————————————————————————————————————————————————————————————————
 @Composable
 fun AppointmentsScreen(viewModel: BookingViewModel = viewModel()) {
     //Automatically fetch data from Render when this screen opens
@@ -324,18 +335,7 @@ fun AppointmentsScreen(viewModel: BookingViewModel = viewModel()) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+//PatientRecordsScreen ———————————————————————————————————————————————————————————————————————————————
 @Composable
 fun PatientRecordsScreen() {
     Box(modifier = Modifier
@@ -346,7 +346,7 @@ fun PatientRecordsScreen() {
         Text("Patient Records Screen")
     }
 }
-
+//SettingsScreen ———————————————————————————————————————————————————————————————————————————————
 @Composable
 fun SettingsScreen() {
     Box(modifier = Modifier
@@ -409,6 +409,10 @@ fun LoginRegisterScreen(
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isLoginMode by remember { mutableStateOf(true) }
+    var fullName by remember { mutableStateOf("")}
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -431,13 +435,26 @@ fun LoginRegisterScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
 
-
             ) {
+
                 Text(
                     text = "Welcome Back",
                     fontSize = 24.sp,
                     color = Color(0xFF0284C7)
                 )
+
+                if (!isLoginMode) {
+                    OutlinedTextField(
+                        value = fullName,
+                        onValueChange = { fullName = it},
+                        label = { Text("Full Name")},
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+
+
 
                 OutlinedTextField(
                     value = email,
@@ -455,12 +472,103 @@ fun LoginRegisterScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Button(
+                // --- ADD THIS GOOGLE BUTTON ---
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedButton(
                     onClick = {
-                        if (email.isNotEmpty() && password.isNotEmpty()) {
-                            onLoginSuccess() // Triggers 'isLoggedIn = true' in MainActivity
+                        coroutineScope.launch {
+                            try {
+                                val credentialManager = CredentialManager.create(context)
+
+                                val googleIdOption = GetGoogleIdOption.Builder()
+                                    .setFilterByAuthorizedAccounts(false)
+                                    // ⚠️ IMPORTANT: PASTE YOUR WEB CLIENT ID HERE:
+                                    .setServerClientId("824956744352-1l791357gca0l4b5j85343kod8batn4q.apps.googleusercontent.com")
+                                    .setAutoSelectEnabled(true)
+                                    .build()
+
+                                val request = GetCredentialRequest.Builder()
+                                    .addCredentialOption(googleIdOption)
+                                    .build()
+
+                                // This line shows the Google Account Chooser popup!
+                                val result = credentialManager.getCredential(context, request)
+                                val credential = result.credential
+
+                                if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+
+                                    // Send the secure token to your Node.js backend!
+                                    authViewModel.googleLogin(
+                                        idToken = googleIdTokenCredential.idToken,
+                                        sessionManager = sessionManager,
+                                        onSuccess = { onLoginSuccess() }, // Go to Dashboard!
+                                        onError = { /* Handle Error if you want */ }
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                // User closed the popup, do nothing.
+                            }
                         }
                     },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        // The Icon
+                        Icon(
+                            imageVector = Icons.Default.Person, // We use a default Android icon here temporarily
+                            contentDescription = "Google Logo",
+                            tint = Color.Black,
+                            modifier = Modifier.size(24.dp)
+                        )
+
+                        // A little space between the icon and the text
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // The Text
+                        Text("Continue with Google", color = Color.Black, fontSize = 16.sp)
+                    }
+
+
+                }
+
+                Button(
+                    onClick = {
+
+                        if (isLoginMode) {
+
+                            if (email.isNotEmpty() && password.isNotEmpty()) {
+                                authViewModel.loginUser(
+                                    email = email,
+                                    pass = password,
+                                    sessionManager = sessionManager,
+                                    onSuccess = { onLoginSuccess },
+                                    onError = { }
+                                )
+                            }
+
+                        } else {
+                            if (email.isNotEmpty() && password.isNotEmpty()) {
+                                authViewModel.registerUser(
+                                    fullName = fullName,
+                                    email = email,
+                                    pass = password,
+                                    onSuccess = { isLoginMode = true },
+                                    onError = { }
+                                )
+
+                            }
+                        }
+                    },
+
+
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -468,10 +576,36 @@ fun LoginRegisterScreen(
                 ) {
                     Text("Login", fontSize = 16.sp)
                 }
+
+
+                // Put this right below your blue Login Button
+                TextButton(
+                    onClick = { isLoginMode = !isLoginMode },
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text(
+                        text = if (isLoginMode) "Login" else "Register",
+                        color = Color.Gray
+                    )
+                }
             }
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

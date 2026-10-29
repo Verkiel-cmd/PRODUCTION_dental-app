@@ -12,8 +12,11 @@ data class BookingRequest(
     val time: String,
     val phone: String,
     val otp: String,
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    val role: String?
 )
+
+data class GoogleLoginRequest(val idToken: String)
 
 // matches my success response
 data class ApiResponse(val success: Boolean, val message: String)
@@ -32,5 +35,6 @@ data class RegisterRequest(val fullName: String, val email: String, val pass: St
 data class AuthResponse(
     val success: Boolean,
     val message: String,
-    val token: String? // Your web API should return a token/userId on success
+    val token: String?, // Your web API should return a token/userId on success
+    val role: String?
 )

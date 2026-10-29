@@ -28,6 +28,29 @@ class BookingViewModel : ViewModel() {
 
 class AuthViewModel : ViewModel() {
 
+    fun googleLogin(
+        idToken: String,
+        sessionManager: SessionManager,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                // Sends the token to your Node.js backend
+                val response = RetrofitClient.api.googleLogin(GoogleLoginRequest(idToken))
+
+                if (response.success && response.token != null && response.role != null) {
+                    sessionManager.saveAuth(response.token, response.role) // Saves token and role!
+                    onSuccess()
+                } else {
+                    onError(response.message ?: "Google Login Failed")
+                }
+            } catch (e: Exception) {
+                onError("Network error")
+            }
+        }
+    }
+
     fun loginUser(
         email: String,
         pass: String,
@@ -42,7 +65,7 @@ class AuthViewModel : ViewModel() {
                 val response = RetrofitClient.api.loginUser(LoginRequest(email, pass))
 
                 if (response.success && response.token != null) {
-                    sessionManager.saveAuthToken(response.token) // Save to localStorage
+                    sessionManager.saveAuth(response.token, response.role ?: "patient") // Save to localStorage
                     onSuccess()
                 } else {
                     onError(response.message ?: "Login Failed")
