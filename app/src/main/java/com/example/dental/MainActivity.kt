@@ -84,6 +84,7 @@ import androidx.credentials.CustomCredential
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.ui.res.painterResource
 
 
 
@@ -174,6 +175,8 @@ fun BurgerMenuScreen(onLogout: () -> Unit = {}) {
         currentScreen = destination
         isMenuOpen = false
     }
+
+    //DESIGN PART————————————————————————————————————————————————————————————————————————————————————————
 
     // 2. Use Box to layer the full-screen menu over the Scaffold dashboard
     Box(modifier = Modifier.fillMaxSize()) {
@@ -276,8 +279,9 @@ fun BurgerMenuScreen(onLogout: () -> Unit = {}) {
 
 
 
-//NAV LINKS
+
 //DashboardScreen ———————————————————————————————————————————————————————————————————————————————
+//NAV LINKS
 @Composable
 fun DashboardScreen() {
     Box(modifier = Modifier
@@ -297,6 +301,8 @@ fun AppointmentsScreen(viewModel: BookingViewModel = viewModel()) {
     LaunchedEffect(Unit) {
         viewModel.fetchAppointments()
     }
+
+    //DESIGN PART————————————————————————————————————————————————————————————————————————————————————————
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -517,15 +523,19 @@ fun LoginRegisterScreen(
                         .fillMaxWidth()
                         .height(50.dp)
                 ) {
+
+                    //DESIGN PART————————————————————————————————————————————————————————————————————
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        // The Icon
+                        // Change this block in your Google Button:
                         Icon(
-                            imageVector = Icons.Default.Person, // We use a default Android icon here temporarily
+                            // DELETE Icons.Default.Person
+                            // USE painterResource instead!
+                            painter = painterResource(id = R.drawable.google_icon),
                             contentDescription = "Google Logo",
-                            tint = Color.Black,
+                            tint = Color.Unspecified, // VERY IMPORTANT: Use Unspecified so it keeps its official colors!
                             modifier = Modifier.size(24.dp)
                         )
 
@@ -633,6 +643,8 @@ fun RegisterForm(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+
+//DESIGN PART————————————————————————————————————————————————————————————————————————————————————————
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -731,6 +743,7 @@ fun AppBottomNavigation(
     onCenterButtonClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    //DESIGN PART————————————————————————————————————————————————————————————————————————————————————————
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -860,6 +873,9 @@ private fun RowScope.CustomNavItem(
         //onClick = onClick,
         //modifier = Modifier.size(50.dp)
     //) {
+
+
+    //DESIGN PART————————————————————————————————————————————————————————————————————————————————————————
     Column(
         modifier = Modifier
             .weight(1f) //weight works because of RowScope
@@ -932,6 +948,8 @@ fun FullscreenMenuOverlay(
     onNavigate: (AppScreen) -> Unit,
     onLogout: () -> Unit
 ) {
+
+    //DESIGN PART————————————————————————————————————————————————————————————————————————————————————————
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFF0F172A)
@@ -1047,6 +1065,8 @@ fun MenuNavItem(
     subtitle: String,
     onClick: () -> Unit
 ) {
+
+    //DESIGN PART————————————————————————————————————————————————————————————————————————————————————————
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1123,6 +1143,8 @@ enum class AppScreen {
 @Composable
 fun CustomCircularBurgerIcon() {
     // Background Circle
+
+    //DESIGN PART————————————————————————————————————————————————————————————————————————————————————————
     Box(
         modifier = Modifier
             .size(42.dp) // Size of the circle
@@ -1242,6 +1264,8 @@ fun BurgerMenuScreen() {
 // Main editor for mobile app
 @Composable
 fun Dental(name: String, modifier: Modifier = Modifier) {
+
+    //DESIGN PART————————————————————————————————————————————————————————————————————————————————————————
     Box(
         modifier = Modifier
             .fillMaxSize()
