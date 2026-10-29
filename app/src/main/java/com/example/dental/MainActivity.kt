@@ -515,7 +515,8 @@ fun LoginRegisterScreen(
                                     )
                                 }
                             } catch (e: Exception) {
-                                // User closed the popup, do nothing.
+                                // ADD THIS LINE TO SEE THE ERROR:
+                                android.util.Log.e("GoogleSignIn", "Credential Manager Error: ", e)
                             }
                         }
                     },
